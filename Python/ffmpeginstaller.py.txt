@@ -1,0 +1,28 @@
+import os
+import requests
+import subprocess
+
+def set_ffmpeg_env_var():
+	# This may work, but im pretty sure you need admin, we will se when i test it.
+	subprocess.call('setx.exe','/M PATH "%PATH%;C:\Something\bin"')
+
+	# This could also work, possibly.
+	#os.system(r'''
+	#	Powershell -Command "& { Start-Process \"setx.exe\"
+ 	#	-ArgumentList @(/M PATH \"%PATH%;C:\Something\bin\")
+ 	#	-Verb RunAs } " '''
+
+
+def get_ffmpeg_from_url():
+	# The url needs point straight to file
+	r = requests.get("https://github.com/BtbN/FFmpeg-Builds/releases/download/latest/ffmpeg-master-latest-win64-lgpl.zip",stream=True)
+	
+	with open("ffmpeg.zip", 'wb') as f:
+		for chunk in r.iter_content(chunck_size=1024):
+			# This will filter out any unwanted traffic
+			if chunk:
+				f.write(chunk)
+
+
+def unzip_move_ffmpeg():
+	# Need to unzip and move the file
