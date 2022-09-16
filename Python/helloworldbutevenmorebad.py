@@ -1,6 +1,6 @@
 import random as rand
 import time
-
+#How long will it take to randomly print hello world?
 letters = {
     1: "a",
     2: "b",
