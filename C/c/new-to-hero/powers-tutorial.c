@@ -1,5 +1,8 @@
 #include<stdio.h>
 
+/* This is a function prototype
+ *  Its stating that power will take 2 arguments
+ *  These argument NAMES dont have to match the function declaration*/
 int power(int m, int n);
 
 int main(){
