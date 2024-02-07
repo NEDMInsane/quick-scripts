@@ -2,47 +2,60 @@ import tkinter as tk
 from tkinter import ttk
 from random import randint
 from pynput import mouse
-from pynput import keyboard
 from PIL import Image, ImageGrab
+
+
+def get_mouse_position(func):
+    def wrapper(*args):
+        print(f'Wrapper Args: {args}')
+        with mouse.Listener(on_click=func) as ml:
+            ml.join()
+
+    return wrapper
 
 
 class MainWindow:
     def __init__(self, root):
+        #  Setting up the Window
         self.root = root
-        self.width = 550
+        self.width = 570
         self.height = 370
         self.root.title('Color Palette')
         self.root.geometry(f'{self.width}x{self.height}')
-        self.default_color = (255, 255, 255)
+        self.default_color = (255, 255, 255)  # Default color To display when program opens
         self.current_color = '#FFFFFF'
         self.current_selection = None
-
+        #  Setting-up top most container to store other TOP containers
         self.top_container = tk.Frame(self.root)
         self.top_container.pack(side=tk.TOP, pady=20)
-
-        self.left_top = tk.Frame(self.top_container)
-        self.left_top.grid(row=0, column=0)
-
-        self.color_panel = tk.Canvas(self.left_top, width=100, height=100,
+        #  Top Left container to store the Canvas Panel
+        self.canvas_frame = tk.Frame(self.top_container)
+        self.canvas_frame.grid(row=0, column=0)
+        #  Setting-up the Canvas Panel
+        #  #{:02x} - produces a 2 digit hex value with a preceding 0
+        self.color_panel = tk.Canvas(self.canvas_frame, width=100, height=100,
                                      bg='#{:02x}{:02x}{:02x}'
                                      .format(self.default_color[0], self.default_color[1], self.default_color[2]))
         self.color_panel.pack(padx=10, pady=10)
 
-        self.right_top = tk.Frame(self.top_container)
-        self.right_top.grid(row=0, column=1)
+        self.label_frame = tk.Frame(self.top_container)
+        self.label_frame.grid(row=0, column=1)
 
-        self.color_label_rgb = tk.Label(self.right_top, text=f'RGB:\t{self.default_color}')
+        self.color_label_rgb = tk.Label(self.label_frame, text=f'RGB:\t{self.default_color}')
         self.color_label_rgb.pack(side=tk.TOP, anchor=tk.W, padx=10)
-        self.color_label_hex = tk.Label(self.right_top,
+        self.color_label_hex = tk.Label(self.label_frame,
                                         text='Hex:\t#{:02X}{:02X}{:02X}'
                                         .format(self.default_color[0], self.default_color[1], self.default_color[2]))
         self.color_label_hex.pack(side=tk.TOP, anchor=tk.W, padx=10)
 
-        self.button_container = tk.Frame(self.top_container)
-        self.button_container.grid(row=1, column=0, columnspan=2)
-        new_button = tk.Button(self.button_container, text='New Color')
-        new_button.grid(row=1, column=0, padx=(0, 5), pady=5)
-        save_button = tk.Button(self.button_container, text='Save Color')
+        self.button_frame = tk.Frame(self.top_container)
+        self.button_frame.grid(row=1, column=0, columnspan=2)
+
+        self.new_button = tk.Button(self.button_frame, text='New Color')
+        self.new_button.bind('<Button-1>', self.set_color_from_screen)
+        self.new_button.grid(row=1, column=0, padx=(0, 5), pady=5)
+
+        save_button = tk.Button(self.button_frame, text='Save Color')
         save_button.bind('<Button-1>', self.change_palette)
         save_button.grid(row=1, column=1, padx=(0, 5), pady=5)
 
@@ -106,6 +119,22 @@ class MainWindow:
             # print(self.current_selection)
         else:
             print(f'{canvas_object} already selected.')
+
+    def set_color_from_screen(self, event):
+        location = get_px_loc()
+        x = location[0]
+        y = location[1]
+        selection_box = (x, y, x + 1, y + 1)
+        image_grab = ImageGrab.grab(bbox=selection_box)
+        image_rgb = image_grab.convert('RGB')
+        r, g, b = image_rgb.getpixel((0, 0))
+        self.change_color((r, g, b))
+
+
+@get_mouse_position
+def get_px_loc(x, y, button, clicked):
+    if clicked and button == mouse.Button.left:
+        return x, y
 
 
 if __name__ == "__main__":
