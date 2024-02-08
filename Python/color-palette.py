@@ -1,32 +1,25 @@
 import tkinter as tk
 from tkinter import ttk
 from random import randint
+import pynput.mouse
 from pynput import mouse
 from PIL import Image, ImageGrab
 
 
-def get_mouse_position(func):
-    def wrapper(*args):
-        print(f'Wrapper Args: {args}')
-        with mouse.Listener(on_click=func) as ml:
-            ml.join()
-
-    return wrapper
-
-
-class MainWindow:
-    def __init__(self, root):
+class MainWindow(tk.Tk):
+    def __init__(self):
         #  Setting up the Window
-        self.root = root
+        super().__init__()
         self.width = 570
         self.height = 370
-        self.root.title('Color Palette')
-        self.root.geometry(f'{self.width}x{self.height}')
+        self.title('Color Palette')
+        self.geometry(f'{self.width}x{self.height}')
         self.default_color = (255, 255, 255)  # Default color To display when program opens
         self.current_color = '#FFFFFF'
         self.current_selection = None
+        self.mouse_listener = None
         #  Setting-up top most container to store other TOP containers
-        self.top_container = tk.Frame(self.root)
+        self.top_container = tk.Frame(self)
         self.top_container.pack(side=tk.TOP, pady=20)
         #  Top Left container to store the Canvas Panel
         self.canvas_frame = tk.Frame(self.top_container)
@@ -52,17 +45,17 @@ class MainWindow:
         self.button_frame.grid(row=1, column=0, columnspan=2)
 
         self.new_button = tk.Button(self.button_frame, text='New Color')
-        self.new_button.bind('<Button-1>', self.set_color_from_screen)
+        self.new_button.bind('<Button-1>', self.listen_for_click)
         self.new_button.grid(row=1, column=0, padx=(0, 5), pady=5)
 
         save_button = tk.Button(self.button_frame, text='Save Color')
         save_button.bind('<Button-1>', self.change_palette)
         save_button.grid(row=1, column=1, padx=(0, 5), pady=5)
 
-        separator = ttk.Separator(self.root)
+        separator = ttk.Separator(self)
         separator.pack(fill='x', pady=10)
 
-        self.bottom_container = tk.Frame(self.root)
+        self.bottom_container = tk.Frame(self)
         self.bottom_container.pack(pady=10)
 
         self.create_palette_array()
@@ -120,24 +113,25 @@ class MainWindow:
         else:
             print(f'{canvas_object} already selected.')
 
-    def set_color_from_screen(self, event):
-        location = get_px_loc()
-        x = location[0]
-        y = location[1]
-        selection_box = (x, y, x + 1, y + 1)
-        image_grab = ImageGrab.grab(bbox=selection_box)
-        image_rgb = image_grab.convert('RGB')
-        r, g, b = image_rgb.getpixel((0, 0))
-        self.change_color((r, g, b))
+    def listen_for_click(self, event):
+        if self.mouse_listener is None:
+            self.mouse_listener = pynput.mouse.Listener(on_click=self.set_color_from_screen)
+            self.mouse_listener.start()
+            self.attributes('-topmost', True)
 
-
-@get_mouse_position
-def get_px_loc(x, y, button, clicked):
-    if clicked and button == mouse.Button.left:
-        return x, y
+    def set_color_from_screen(self, x, y, button, clicked):
+        if clicked and button == mouse.Button.left:
+            selection_box = (x, y, x + 1, y + 1)
+            image_grab = ImageGrab.grab(bbox=selection_box)
+            image_rgb = image_grab.convert('RGB')
+            r, g, b = image_rgb.getpixel((0, 0))
+            self.change_color((r, g, b))
+            if self.mouse_listener:
+                self.mouse_listener.stop()
+                self.mouse_listener = None
+                #  self.attributes('-topmost', False)
 
 
 if __name__ == "__main__":
-    window = tk.Tk()
-    gui = MainWindow(window)
-    window.mainloop()
+    gui = MainWindow()
+    gui.mainloop()
