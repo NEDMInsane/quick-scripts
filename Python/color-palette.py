@@ -1,8 +1,8 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, Menu
 from random import randint
 from pynput import mouse
-from PIL import Image, ImageGrab
+from PIL import ImageGrab
 
 
 class MainWindow(tk.Tk):
@@ -17,6 +17,13 @@ class MainWindow(tk.Tk):
         self.current_color = '#FFFFFF'
         self.current_selection = None
         self.mouse_listener = None
+        self.menu_bar = Menu(self)
+
+        self.create_top_menu()
+        self.config(menu=self.menu_bar)
+        '''
+            Maybe add a function just for creating the gui?
+        '''
         #  Setting-up top most container to store other TOP containers
         self.top_container = tk.Frame(self)
         self.top_container.pack(side=tk.TOP, pady=20)
@@ -25,10 +32,10 @@ class MainWindow(tk.Tk):
         self.canvas_frame.grid(row=0, column=0)
         #  Setting-up the Canvas Panel
         #  #{:02x} - produces a 2 digit hex value with a preceding 0
-        self.color_panel = tk.Canvas(self.canvas_frame, width=100, height=100,
-                                     bg='#{:02x}{:02x}{:02x}'
-                                     .format(self.default_color[0], self.default_color[1], self.default_color[2]))
-        self.color_panel.pack(padx=10, pady=10)
+        self.color_canvas = tk.Canvas(self.canvas_frame, width=100, height=100,
+                                      bg='#{:02x}{:02x}{:02x}'
+                                      .format(self.default_color[0], self.default_color[1], self.default_color[2]))
+        self.color_canvas.pack(padx=10, pady=10)
 
         self.label_frame = tk.Frame(self.top_container)
         self.label_frame.grid(row=0, column=1)
@@ -59,9 +66,15 @@ class MainWindow(tk.Tk):
 
         self.create_palette_array()
 
+    def create_top_menu(self):
+        # Create a top menu to load, save, always on top, options.
+        file_menu = Menu(self.menu_bar, tearoff=0)
+        self.menu_bar.add_cascade(label='File', menu=file_menu)
+        file_menu.add_command(label='Exit', command=self.destroy)
+
     def change_color(self, color):
         hex_color = "#{:02X}{:02X}{:02X}".format(color[0], color[1], color[2])
-        self.color_panel.config(bg=hex_color)
+        self.color_canvas.config(bg=hex_color)
         self.color_label_rgb.config(text=f'RGB:\t{color}')
         self.color_label_hex.config(text=f'Hex:\t{hex_color}')
         self.current_color = hex_color
