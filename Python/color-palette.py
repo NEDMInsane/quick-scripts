@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
 from random import randint
-import pynput.mouse
 from pynput import mouse
 from PIL import Image, ImageGrab
 
@@ -115,7 +114,7 @@ class MainWindow(tk.Tk):
 
     def listen_for_click(self, event):
         if self.mouse_listener is None:
-            self.mouse_listener = pynput.mouse.Listener(on_click=self.set_color_from_screen)
+            self.mouse_listener = mouse.Listener(on_click=self.set_color_from_screen)
             self.mouse_listener.start()
             self.attributes('-topmost', True)
 
