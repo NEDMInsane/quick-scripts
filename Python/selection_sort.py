@@ -13,7 +13,7 @@ min_value = (0, unsorted[0])
 # Create new empy list to store sorted entries
 sorted_list = []
 
-# Bubble sort
+# Selection Sort
 # Take the value, check to see if that value is the lowest.
 # If that value is the lowest throughout the list, add it to the sorted list.
 # Remove it from the unsorted list.
